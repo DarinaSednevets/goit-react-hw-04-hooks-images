@@ -20,32 +20,6 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // const fetchPictures = () => {
-  //   const options = {
-  //     page,
-  //     query,
-  //   };
-  //   setIsLoading(true);
-  //   searchApi(options)
-  //     .then(pictures => {
-  //       setPictures(prev => [...prev, pictures]);
-  //       setPage(prev => prev + 1);
-  //     })
-  //     .catch(() => setError('Picture not found'))
-  //     .finally(() => setIsLoading(false));
-  // };
-
-  // useEffect(() => {
-  //   if (!query) {
-  //     return;
-  //   }
-  //   fetchPictures();
-  //   scrollDown();
-
-  // }, [query])
-
-
-
   useEffect(() => {
     if (!query) {
       return;
@@ -102,7 +76,6 @@ function App() {
       <ImageGallery pictures={pictures} bigImage={bigImage} />
       {isLoading && <Loader />}
       {pictures.length > 11 && !isLoading && (
-
         <Button onClick={getImages} />
       )}
       {showModal && (
@@ -115,4 +88,3 @@ function App() {
 
 
 export default App;
-// {/* <Button onClick={fetchPictures} /> */ }
