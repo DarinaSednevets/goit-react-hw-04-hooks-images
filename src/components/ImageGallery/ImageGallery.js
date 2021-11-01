@@ -9,6 +9,7 @@ const ImageGallery = ({ pictures, bigImage }) => {
                 return (
                     <ImageGalleryItem
                         key={id}
+                        id={id}
                         image={webformatURL}
                         onClick={handleItemClick}
                     />

@@ -1,4 +1,3 @@
-// import React, { Component } from 'react';
 
 import styles from "./App.module.css";
 import Searchbar from "./components/Searchbar/Searchbar";
@@ -6,8 +5,9 @@ import Button from "./components/Button/Button";
 import ImageGallery from './components/ImageGallery/ImageGallery';
 import Modal from './components/Modal/Modal';
 import Loader from './components/Loader/Loader';
-import searchApi from './services/searchApi';
+
 import { useState, useEffect } from 'react';
+import fetchImages from './services/searchApi';
 
 function App() {
 
@@ -20,36 +20,65 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchPictures = () => {
-    const options = {
-      page,
-      query,
-    };
-    setIsLoading(true);
-    searchApi(options)
-      .then(pictures => {
-        setPictures(prev => [...prev, pictures]);
-        setPage(prev => prev + 1);
-      })
-      .catch(() => setError('Picture not found'))
-      .finally(() => setIsLoading(false));
-  };
+  // const fetchPictures = () => {
+  //   const options = {
+  //     page,
+  //     query,
+  //   };
+  //   setIsLoading(true);
+  //   searchApi(options)
+  //     .then(pictures => {
+  //       setPictures(prev => [...prev, pictures]);
+  //       setPage(prev => prev + 1);
+  //     })
+  //     .catch(() => setError('Picture not found'))
+  //     .finally(() => setIsLoading(false));
+  // };
+
+  // useEffect(() => {
+  //   if (!query) {
+  //     return;
+  //   }
+  //   fetchPictures();
+  //   scrollDown();
+
+  // }, [query])
+
+
 
   useEffect(() => {
     if (!query) {
       return;
     }
-    fetchPictures();
-    scrollToDown();
+    getImages();
+    scrollDown();
 
-  }, [fetchPictures, query]);
+  }, [query])  /* eslint-disable-line */
 
-  const scrollToDown = () => {
+  const getImages = async () => {
+    setIsLoading(true);
+    try {
+      const { hits } = await fetchImages(query, page);
+      setPictures(prev => [...prev, ...hits]);
+      setPage(prevPage => prevPage + 1);
+      if (page !== 1) {
+        scrollDown();
+      }
+    } catch (error) {
+      alert('Picture not found', error);
+      setError({ error });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const scrollDown = () => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: 'smooth',
     })
   }
+
   const toggleModal = () => {
     setShowModal(!showModal);
   };
@@ -73,7 +102,8 @@ function App() {
       <ImageGallery pictures={pictures} bigImage={bigImage} />
       {isLoading && <Loader />}
       {pictures.length > 11 && !isLoading && (
-        <Button onClick={fetchPictures} />
+
+        <Button onClick={getImages} />
       )}
       {showModal && (
         <Modal showModal={bigImage}>
@@ -85,3 +115,4 @@ function App() {
 
 
 export default App;
+// {/* <Button onClick={fetchPictures} /> */ }
