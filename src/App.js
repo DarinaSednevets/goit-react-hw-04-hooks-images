@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+// import React, { Component } from 'react';
 
 import styles from "./App.module.css";
 import Searchbar from "./components/Searchbar/Searchbar";
@@ -7,105 +7,81 @@ import ImageGallery from './components/ImageGallery/ImageGallery';
 import Modal from './components/Modal/Modal';
 import Loader from './components/Loader/Loader';
 import searchApi from './services/searchApi';
+import { useState, useEffect } from 'react';
 
+function App() {
 
-class App extends Component {
-  state = {
-    pictures: [],
-    page: 1,
-    query: '',
-    largeImage: '',
-    imgTags: '',
-    error: '',
-    showModal: false,
-    isLoading: false,
-  }
+  const [pictures, setPictures] = useState([]);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState('');
+  const [largeImage, setLargeImage] = useState('');
+  const [imgTags, setImgTags] = useState('');
+  const [error, setError] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.query !== this.state.query) {
-      this.fetchPictures();
-    }
-    if (this.state.page !== 2 && prevState.page !== this.state.page) {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: 'smooth',
-      });
-    }
-  }
-
-
-  toggleModal = () => {
-    this.setState(state => (
-      { showModal: !state.showModal, }
-    ))
-  }
-  bigImage = (largeImage = '') => {
-    this.setState({ largeImage });
-    this.toggleModal();
-  }
-
-  fetchPictures = () => {
-    const { page, query } = this.state;
+  const fetchPictures = () => {
     const options = {
       page,
       query,
     };
-    this.setState({ isLoading: true });
-
+    setIsLoading(true);
     searchApi(options)
       .then(pictures => {
-        this.setState(prevState => ({
-          pictures: [...prevState.pictures, ...pictures],
-          page: prevState.page + 1,
-        }));
+        setPictures(prev => [...prev, pictures]);
+        setPage(prev => prev + 1);
       })
-      .catch(error => this.setState({ error: 'Picture not found' }))
-      .finally(() => this.setState({ isLoading: false }));
+      .catch(() => setError('Picture not found'))
+      .finally(() => setIsLoading(false));
   };
 
-  onChangeQuery = query => {
-    this.setState({
-      query: query,
-      page: 1,
-      pictures: [],
-      error: null,
+  useEffect(() => {
+    if (!query) {
+      return;
+    }
+    fetchPictures();
+    scrollToDown();
+
+  }, [fetchPictures, query]);
+
+  const scrollToDown = () => {
+    window.scrollTo({
+      top: document.documentElement.scrollHeight,
+      behavior: 'smooth',
     })
+  }
+  const toggleModal = () => {
+    setShowModal(!showModal);
+  };
+  const bigImage = (largeImage, webformatURL) => {
+    setLargeImage(largeImage);
+    setImgTags(webformatURL);
+    toggleModal();
+  }
+
+  const onChangeQuery = query => {
+    setQuery(query);
+    setPage(1);
+    setPictures([]);
+    setError(null);
   };
 
-  render() {
-    const {
-      pictures,
-      isLoading,
-      error,
-      showModal,
-      largeImage,
-      imgTags,
-    } = this.state;
-
-
-    return (
-      <div className={styles.App}>
-        <Searchbar onSubmit={this.onChangeQuery} />
-
-        {error && <h1>{error}</h1>}
-
-        <ImageGallery pictures={pictures} bigImage={this.bigImage} />
-
-        {isLoading && <Loader />}
-
-        {pictures.length > 11 && !isLoading && (
-          <Button onClick={this.fetchPictures} />
-        )}
-
-        {showModal && (
-          <Modal showModal={this.bigImage}>
-            <img src={largeImage} alt={imgTags} />
-          </Modal>
-        )}
-
-      </div>
-    )
-  }
+  return (
+    <div className={styles.App}>
+      <Searchbar onSubmit={onChangeQuery} />
+      {error && <h1>{error}</h1>}
+      <ImageGallery pictures={pictures} bigImage={bigImage} />
+      {isLoading && <Loader />}
+      {pictures.length > 11 && !isLoading && (
+        <Button onClick={fetchPictures} />
+      )}
+      {showModal && (
+        <Modal showModal={bigImage}>
+          <img src={largeImage} alt={imgTags} />
+        </Modal>
+      )}
+    </div>)
 }
+
 
 export default App;

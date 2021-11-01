@@ -5,7 +5,7 @@ const ImageGallery = ({ pictures, bigImage }) => {
     return (
         <ul className={styles.ImageGallery}>
             {pictures.map(({ id, webformatURL, largeImageURL }) => {
-                const handleItemClick = () => bigImage(largeImageURL);
+                const handleItemClick = (() => bigImage(largeImageURL, webformatURL));
                 return (
                     <ImageGalleryItem
                         key={id}
